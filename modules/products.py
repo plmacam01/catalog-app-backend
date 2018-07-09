@@ -38,7 +38,7 @@ class Products(Resource):
         return d_result, {'Content-Type': 'application/json; character=utf-8'}
     def post(self):
         data = request.get_json();
-        req = ProductsTbl(name=data['name'], status_id=data['status'], price=round(data['price'], 2), stock=data['stock']);
+        req = ProductsTbl(name=data['name'], status_id=data['status'], price=data['price'], stock=data['stock']);
 
         session.add(req)
         session.commit()
