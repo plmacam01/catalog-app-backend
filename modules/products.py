@@ -19,31 +19,40 @@ class Products(Resource):
     def get(self):
         d_result = {}
 
-        qry_products = session.query(ProductsTbl).join(ProductsTbl.status).order_by(ProductsTbl.id.asc()).all()
+        try:
+            qry_products = session.query(ProductsTbl).join(ProductsTbl.status).order_by(ProductsTbl.id.asc()).all()
 
-# session.query(User, Address).join('addresses')
-        list_products = []
-        for product in qry_products:
-            d_product = {
-                'id': product.id,
-                'name': product.name,
-                'status': product.status.name,
-                'price': str(product.price),
-                'stock': product.stock
-            }
-            list_products.append(d_product)
+            list_products = []
+            for product in qry_products:
+                d_product = {
+                    'id': product.id,
+                    'name': product.name,
+                    'status': product.status.name,
+                    'price': str(product.price),
+                    'stock': product.stock
+                }
+                list_products.append(d_product)
+            d_result.update({'data': list_products})
 
-        d_result.update({'data': list_products})
+        except (sqlalchemy.exc.SQLAlchemyError, sqlalchemy.exc.DBAPIError) as e:
+            return dumps(e), 400
 
         return d_result, {'Content-Type': 'application/json; character=utf-8'}
     def post(self):
         data = request.get_json();
-        req = ProductsTbl(name=data['name'], status_id=data['status'], price=data['price'], stock=data['stock']);
 
-        session.add(req)
-        session.commit()
+        try:
+            req = ProductsTbl(name=data['name'], status_id=data['status'], price=data['price'], stock=data['stock']);
+        except (sqlalchemy.exc.SQLAlchemyError, sqlalchemy.exc.DBAPIError) as e:
+            return dumps(e), 400
 
-        return "ok", 201
+        try:
+            session.add(req)
+            session.commit()
+        except (sqlalchemy.exc.SQLAlchemyError, sqlalchemy.exc.DBAPIError) as e:
+            return dumps(e), 400
+
+        return dumps({}), 201
 class Product(Resource):
     def put(self, id):
         data = request.get_json();
@@ -55,12 +64,15 @@ class Product(Resource):
             'stock': data['stock']
         }
 
-        session.query(ProductsTbl).filter(ProductsTbl.id == id).update(d_product)
-        session.commit()
+        try:
+            session.query(ProductsTbl).filter(ProductsTbl.id == id).update(d_product)
+            session.commit()
+        except (sqlalchemy.exc.SQLAlchemyError, sqlalchemy.exc.DBAPIError) as e:
+            return dumps(e), 400
 
-        return "ok", 201
+        return dumps({}), 201
     def delete(self, id):
 
         session.query(ProductsTbl).filter(ProductsTbl.id == id).delete()
         session.commit()
-        return "ok", 201
+        return dumps({}), 201
