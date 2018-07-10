@@ -9,12 +9,6 @@ from json import dumps
 from flask_restful import Resource, Api
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 
-# db_connect = create_engine('postgresql+psycopg2:///catalog')
-# database = 'catalog'
-#
-# import psycopg2
-# myConnection = psycopg2.connect( dbname=database )
-
 class Products(Resource):
     def get(self):
         d_result = {}
